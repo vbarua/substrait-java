@@ -673,6 +673,10 @@ public class SimpleExtension {
     return load(DEFAULT_EXTENSIONS);
   }
 
+  public static ExtensionCollection load(String resourcePath) throws IOException {
+    return load(Collections.unmodifiableList(Arrays.asList(resourcePath)));
+  }
+
   public static ExtensionCollection load(List<String> resourcePaths) throws IOException {
     if (resourcePaths.isEmpty()) {
       throw new IllegalArgumentException("Require at least one resource path.");
