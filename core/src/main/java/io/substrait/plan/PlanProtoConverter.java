@@ -4,6 +4,7 @@ import io.substrait.expression.proto.FunctionCollector;
 import io.substrait.proto.Plan;
 import io.substrait.proto.PlanRel;
 import io.substrait.proto.Rel;
+import io.substrait.proto.Version;
 import io.substrait.relation.RelProtoConverter;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +26,20 @@ public class PlanProtoConverter {
                       .addAllNames(root.getNames()))
               .build());
     }
+
+    io.substrait.plan.Version v = plan.getVersion();
+    Version version =
+        Version.newBuilder()
+            .setMajorNumber(v.getMajorNumber())
+            .setMinorNumber(v.getMinorNumber())
+            .setPatchNumber(v.getPatchNumber())
+            .setProducer(v.getProducer())
+            .setGitHash(v.getGitHash())
+            .build();
+
     Plan.Builder builder =
         Plan.newBuilder()
+            .setVersion(version)
             .addAllRelations(planRels)
             .addAllExpectedTypeUrls(plan.getExpectedTypeUrls());
     functionCollector.addFunctionsToPlan(builder);

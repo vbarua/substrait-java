@@ -10,6 +10,8 @@ import org.immutables.value.Value;
 public abstract class Plan {
   static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Plan.class);
 
+  public abstract Version getVersion();
+
   public abstract List<Root> getRoots();
 
   public abstract List<String> getExpectedTypeUrls();
