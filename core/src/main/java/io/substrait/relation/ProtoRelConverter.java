@@ -125,35 +125,34 @@ public class ProtoRelConverter {
 
   private EmptyScan newEmptyScan(ReadRel rel) {
     var namedStruct = newNamedStruct(rel);
+    var converter = new ProtoExpressionConverter(lookup, extensions, namedStruct.struct());
     return EmptyScan.builder()
         .initialSchema(namedStruct)
         .remap(optionalRelmap(rel.getCommon()))
-        .filter(
+        .filter(Optional.ofNullable(rel.hasFilter() ? converter.from(rel.getFilter()) : null))
+        .bestEffortFilter(
             Optional.ofNullable(
-                rel.hasFilter()
-                    ? new ProtoExpressionConverter(lookup, extensions, namedStruct.struct())
-                        .from(rel.getFilter())
-                    : null))
+                rel.hasBestEffortFilter() ? converter.from(rel.getBestEffortFilter()) : null))
         .build();
   }
 
   private NamedScan newNamedScan(ReadRel rel) {
     var namedStruct = newNamedStruct(rel);
+    var converter = new ProtoExpressionConverter(lookup, extensions, namedStruct.struct());
     return NamedScan.builder()
         .initialSchema(namedStruct)
         .names(rel.getNamedTable().getNamesList())
         .remap(optionalRelmap(rel.getCommon()))
-        .filter(
+        .filter(Optional.ofNullable(rel.hasFilter() ? converter.from(rel.getFilter()) : null))
+        .bestEffortFilter(
             Optional.ofNullable(
-                rel.hasFilter()
-                    ? new ProtoExpressionConverter(lookup, extensions, namedStruct.struct())
-                        .from(rel.getFilter())
-                    : null))
+                rel.hasBestEffortFilter() ? converter.from(rel.getBestEffortFilter()) : null))
         .build();
   }
 
   private LocalFiles newLocalFiles(ReadRel rel) {
     var namedStruct = newNamedStruct(rel);
+    var converter = new ProtoExpressionConverter(lookup, extensions, namedStruct.struct());
 
     return LocalFiles.builder()
         .initialSchema(namedStruct)
@@ -196,12 +195,10 @@ public class ProtoRelConverter {
                       return builder.build();
                     })
                 .collect(java.util.stream.Collectors.toList()))
-        .filter(
+        .filter(Optional.ofNullable(rel.hasFilter() ? converter.from(rel.getFilter()) : null))
+        .bestEffortFilter(
             Optional.ofNullable(
-                rel.hasFilter()
-                    ? new ProtoExpressionConverter(lookup, extensions, namedStruct.struct())
-                        .from(rel.getFilter())
-                    : null))
+                rel.hasBestEffortFilter() ? converter.from(rel.getBestEffortFilter()) : null))
         .build();
   }
 
@@ -222,6 +219,9 @@ public class ProtoRelConverter {
     var converter = new ProtoExpressionConverter(lookup, extensions, EMPTY_TYPE);
     return VirtualTableScan.builder()
         .filter(Optional.ofNullable(rel.hasFilter() ? converter.from(rel.getFilter()) : null))
+        .bestEffortFilter(
+            Optional.ofNullable(
+                rel.hasBestEffortFilter() ? converter.from(rel.getBestEffortFilter()) : null))
         .remap(optionalRelmap(rel.getCommon()))
         .addAllDfsNames(fieldNames)
         .rows(structLiterals)
