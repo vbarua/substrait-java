@@ -78,7 +78,8 @@ public class ProtoRelConverter {
         return newCross(rel.getCross());
       }
       default -> {
-        // TODO: add support for EXTENSION_SINGLE, EXTENSION_MULTI, EXTENSION_LEAF
+        // TODO: add support for EXTENSION_SINGLE, EXTENSION_MULTI, EXTENSION_LEAF,
+        //   HASH_JOIN, MERGE_JOIN
         throw new UnsupportedOperationException("Unsupported RelTypeCase of " + relType);
       }
     }

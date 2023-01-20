@@ -199,8 +199,8 @@ public class ProtoExpressionConverter {
         }
       }
 
-        // TODO window, enum.
-      case WINDOW_FUNCTION, ENUM -> throw new UnsupportedOperationException(
+        // TODO window, enum, nested
+      case WINDOW_FUNCTION, ENUM, NESTED -> throw new UnsupportedOperationException(
           "Unsupported type: " + expr.getRexTypeCase());
       default -> throw new IllegalArgumentException("Unknown type: " + expr.getRexTypeCase());
     };
