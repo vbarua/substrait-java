@@ -49,12 +49,13 @@ public interface FunctionArg {
       @Override
       public FunctionArgument visitEnumArg(SimpleExtension.Function fnDef, int argIdx, EnumArg ea)
           throws RuntimeException {
-        var enumBldr = FunctionArgument.Enum.newBuilder();
+        var bldr = FunctionArgument.newBuilder();
 
         if (ea.value().isPresent()) {
-          enumBldr = enumBldr.setSpecified(ea.value().get());
+            bldr.setEnum(ea.value().get());
         }
-        return FunctionArgument.newBuilder().setEnum(enumBldr.build()).build();
+        return bldr.build();
+
       }
     };
   }
@@ -74,7 +75,7 @@ public interface FunctionArg {
         case ENUM -> {
           SimpleExtension.EnumArgument enumArgDef =
               (SimpleExtension.EnumArgument) funcDef.args().get(argIdx);
-          var optionValue = fArg.getEnum().getSpecified();
+          var optionValue = fArg.getEnum();
           yield optionValue == null
               ? EnumArg.UNSPECIFIED_ENUM_ARG
               : EnumArg.of(enumArgDef, optionValue);
