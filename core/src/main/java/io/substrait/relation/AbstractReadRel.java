@@ -12,6 +12,8 @@ public abstract class AbstractReadRel extends ZeroInputRel {
 
   public abstract Optional<Expression> getFilter();
 
+  public abstract Optional<Expression> getBestEffortFilter();
+
   // TODO:
   // public abstract Optional<MaskExpression>
 
