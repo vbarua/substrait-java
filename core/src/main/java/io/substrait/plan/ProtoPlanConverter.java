@@ -34,7 +34,19 @@ public class ProtoPlanConverter {
       Rel rel = relConverter.from(root.getInput());
       roots.add(ImmutableRoot.builder().input(rel).names(root.getNamesList()).build());
     }
+
+    io.substrait.proto.Version v = plan.getVersion();
+    Version version =
+        ImmutableVersion.builder()
+            .majorNumber(v.getMajorNumber())
+            .minorNumber(v.getMinorNumber())
+            .patchNumber(v.getPatchNumber())
+            .gitHash(v.getGitHash())
+            .producer(v.getProducer())
+            .build();
+
     return ImmutablePlan.builder()
+        .version(version)
         .roots(roots)
         .expectedTypeUrls(plan.getExpectedTypeUrlsList())
         .advancedExtension(
