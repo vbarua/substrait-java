@@ -21,8 +21,18 @@ public class TestTypeParser {
   private final ParameterizedTypeCreator pn = ParameterizedTypeCreator.NULLABLE;
 
   @Test
-  public void basic() {
+  public void simple() {
     simpleTests(ParseToPojo.Visitor.SIMPLE);
+  }
+
+  @Test
+  public void compound() {
+    compoundTests(ParseToPojo.Visitor.SIMPLE);
+  }
+
+  @Test
+  public void compoundNullable() {
+    compoundNullableTest(ParseToPojo.Visitor.SIMPLE);
   }
 
   @Test
@@ -62,11 +72,31 @@ public class TestTypeParser {
     test(v, n.I32, "I32?");
     test(v, n.I32, "i32?");
     test(v, r.I8, "I8");
-    test(v, n.list(n.I8), "List<I8?>?");
+    test(v, n.list(n.I8), "List?<I8?>");
   }
 
+    private <T> void compoundTests(ParseToPojo.Visitor v) {
+      test(v, r.fixedChar(1), "FIXEDCHAR<1>");
+      test(v, r.varChar(2), "VARCHAR<2>");
+      test(v, r.fixedBinary(3), "FIXEDBINARY<3>");
+      test(v, r.decimal(1,2),"DECIMAL<1, 2>");
+      test(v, r.struct(r.I8, r.I16), "STRUCT<i8, i16>");
+      test(v, r.list(r.I8), "LIST<i8>");
+      test(v, r.map(r.I16, r.I8), "MAP<i16, i8>");
+    }
+
+    private <T> void compoundNullableTest(ParseToPojo.Visitor v) {
+        test(v, n.fixedChar(1), "FIXEDCHAR?<1>");
+        test(v, n.varChar(2), "VARCHAR?<2>");
+        test(v, n.fixedBinary(3), "FIXEDBINARY?<3>");
+        test(v, n.decimal(1,2),"DECIMAL?<1, 2>");
+        test(v, n.struct(r.I8, n.I16), "STRUCT?<i8, i16?>");
+        test(v, n.list(n.I8), "LIST?<i8?>");
+        test(v, n.map(r.I16, n.I8), "MAP?<i16, i8?>");
+    }
+
   private <T> void parameterizedTests(ParseToPojo.Visitor v) {
-    test(v, pn.listE(pr.parameter("K")), "List<K>?");
+    test(v, pn.listE(pr.parameter("K")), "List?<K>");
     test(v, pr.structE(r.I8, r.I16, n.I8, pr.parameter("K")), "STRUCT<i8, i16, i8?, K>");
   }
 

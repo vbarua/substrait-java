@@ -141,11 +141,12 @@ public class ParseToPojo {
 
     @Override
     public TypeExpression visitFixedChar(final SubstraitTypeParser.FixedCharContext ctx) {
+      boolean nullable = ctx.isnull != null;
       return of(
           ctx.len,
-          withNull(ctx)::fixedChar,
-          withNullP(ctx)::fixedCharE,
-          withNullE(ctx)::fixedCharE);
+          Type.withNullability(nullable)::fixedChar,
+          ParameterizedType.withNullability(nullable)::fixedCharE,
+          TypeExpression.withNullability(nullable)::fixedCharE);
     }
 
     private TypeExpression of(
@@ -167,35 +168,43 @@ public class ParseToPojo {
 
     @Override
     public TypeExpression visitVarChar(final SubstraitTypeParser.VarCharContext ctx) {
+      boolean nullable = ctx.isnull != null;
       return of(
-          ctx.len, withNull(ctx)::varChar, withNullP(ctx)::varCharE, withNullE(ctx)::varCharE);
+          ctx.len,
+          Type.withNullability(nullable)::varChar,
+          ParameterizedType.withNullability(nullable)::varCharE,
+          TypeExpression.withNullability(nullable)::varCharE);
     }
 
     @Override
     public TypeExpression visitFixedBinary(final SubstraitTypeParser.FixedBinaryContext ctx) {
+      boolean nullable = ctx.isnull != null;
       return of(
           ctx.len,
-          withNull(ctx)::fixedBinary,
-          withNullP(ctx)::fixedBinaryE,
-          withNullE(ctx)::fixedBinaryE);
+          Type.withNullability(nullable)::fixedBinary,
+          ParameterizedType.withNullability(nullable)::fixedBinaryE,
+          TypeExpression.withNullability(nullable)::fixedBinaryE);
     }
 
     @Override
     public TypeExpression visitDecimal(final SubstraitTypeParser.DecimalContext ctx) {
       Object precision = i(ctx.precision);
       Object scale = i(ctx.scale);
+      boolean nullable = ctx.isnull != null;
 
       if (precision instanceof Integer && scale instanceof Integer) {
-        return withNull(ctx).decimal((int) precision, (int) scale);
+        return Type.withNullability(nullable).decimal((int) precision, (int) scale);
       }
 
       if (precision instanceof String && scale instanceof String) {
         checkParameterizedOrExpression();
-        return withNullP(ctx).decimalE((String) precision, (String) scale);
+        return ParameterizedType.withNullability(nullable)
+            .decimalE((String) precision, (String) scale);
       }
 
       checkExpression();
-      return withNullE(ctx).decimalE(ctx.precision.accept(this), ctx.scale.accept(this));
+      return TypeExpression.withNullability(nullable)
+          .decimalE(ctx.precision.accept(this), ctx.scale.accept(this));
     }
 
     private Object i(SubstraitTypeParser.NumericParameterContext ctx) {
@@ -213,19 +222,20 @@ public class ParseToPojo {
 
     @Override
     public TypeExpression visitStruct(final SubstraitTypeParser.StructContext ctx) {
+      boolean nullable = ctx.isnull != null;
       var types =
           ctx.expr().stream()
               .map(t -> t.accept(this))
               .collect(java.util.stream.Collectors.toList());
       if (types.stream().allMatch(t -> t instanceof Type)) {
-        return withNull(ctx)
+        return Type.withNullability(nullable)
             .struct(
                 types.stream().map(t -> ((Type) t)).collect(java.util.stream.Collectors.toList()));
       }
 
       if (types.stream().allMatch(t -> t instanceof ParameterizedType)) {
         checkParameterizedOrExpression();
-        return withNullP(ctx)
+        return ParameterizedType.withNullability(nullable)
             .structE(
                 types.stream()
                     .map(t -> ((ParameterizedType) t))
@@ -233,7 +243,7 @@ public class ParseToPojo {
       }
 
       checkExpression();
-      return withNullE(ctx).structE(types);
+      return TypeExpression.withNullability(nullable).structE(types);
     }
 
     @Override
@@ -244,33 +254,36 @@ public class ParseToPojo {
     @Override
     public TypeExpression visitList(final SubstraitTypeParser.ListContext ctx) {
       TypeExpression element = ctx.expr().accept(this);
+      boolean nullable = ctx.isnull != null;
       if (element instanceof Type) {
-        return withNull(ctx).list((Type) element);
+        return Type.withNullability(nullable).list((Type) element);
       }
 
       if (element instanceof ParameterizedType) {
         checkParameterizedOrExpression();
-        return withNullP(ctx).listE((ParameterizedType) element);
+        return ParameterizedType.withNullability(nullable).listE((ParameterizedType) element);
       }
 
       checkExpression();
-      return withNullE(ctx).listE(element);
+      return TypeExpression.withNullability(nullable).listE(element);
     }
 
     @Override
     public TypeExpression visitMap(final SubstraitTypeParser.MapContext ctx) {
       TypeExpression key = ctx.key.accept(this);
       TypeExpression value = ctx.value.accept(this);
+      boolean nullable = ctx.isnull != null;
       if (key instanceof Type && value instanceof Type) {
-        return withNull(ctx).map((Type) key, (Type) value);
+        return Type.withNullability(nullable).map((Type) key, (Type) value);
       }
 
       if (key instanceof ParameterizedType && value instanceof ParameterizedType) {
         checkParameterizedOrExpression();
-        return withNullP(ctx).mapE((ParameterizedType) key, (ParameterizedType) value);
+        return ParameterizedType.withNullability(nullable)
+            .mapE((ParameterizedType) key, (ParameterizedType) value);
       }
       checkExpression();
-      return withNullE(ctx).mapE(key, value);
+      return TypeExpression.withNullability(nullable).mapE(key, value);
     }
 
     private TypeCreator withNull(SubstraitTypeParser.RequiredTypeContext required) {
@@ -290,7 +303,11 @@ public class ParseToPojo {
 
     @Override
     public TypeExpression visitType(final SubstraitTypeParser.TypeContext ctx) {
-      return ctx.requiredType().accept(this);
+        if (ctx.requiredType() != null) {
+            return ctx.requiredType().accept(this);
+        } else {
+            return ctx.parametrizedRequiredType().accept(this);
+        }
     }
 
     @Override

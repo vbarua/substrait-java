@@ -157,14 +157,17 @@ requiredType
 	| IntervalDay #intervalDay
 	| IntervalYear #intervalYear
 	| UUID #uuid
-	| FixedChar Lt len=numericParameter Gt #fixedChar
-	| VarChar Lt len=numericParameter Gt #varChar
-	| FixedBinary Lt len=numericParameter Gt #fixedBinary
-	| Decimal Lt scale=numericParameter Comma precision=numericParameter Gt #decimal
-	| Struct Lt expr (Comma expr)* Gt #struct
-	| NStruct Lt Identifier expr (Comma Identifier expr)* Gt #nStruct
-	| List Lt expr Gt #list
-	| Map Lt key=expr Comma value=expr Gt #map
+	;
+
+parametrizedRequiredType
+  : FixedChar isnull='?'? Lt len=numericParameter Gt #fixedChar
+	| VarChar isnull='?'? Lt len=numericParameter Gt #varChar
+	| FixedBinary isnull='?'? Lt len=numericParameter Gt #fixedBinary
+	| Decimal isnull='?'? Lt scale=numericParameter Comma precision=numericParameter Gt #decimal
+	| Struct isnull='?'? Lt expr (Comma expr)* Gt #struct
+	| NStruct isnull='?'? Lt Identifier expr (Comma Identifier expr)* Gt #nStruct
+	| List isnull='?'? Lt expr Gt #list
+	| Map isnull='?'? Lt key=expr Comma value=expr Gt #map
 	;
 
 numericParameter
@@ -175,6 +178,7 @@ numericParameter
 
 type
   : requiredType isnull='?'?
+  | parametrizedRequiredType
   ;
 
 //  : (OParen innerExpr CParen | innerExpr)
