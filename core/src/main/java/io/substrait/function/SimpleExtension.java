@@ -654,22 +654,23 @@ public class SimpleExtension {
     }
   }
 
-  public static ExtensionCollection loadDefaults() throws IOException {
-    var defaultFiles =
-        Arrays.asList(
-                "boolean",
-                "aggregate_generic",
-                "aggregate_approx",
-                "arithmetic_decimal",
-                "arithmetic",
-                "comparison",
-                "datetime",
-                "string")
-            .stream()
-            .map(c -> String.format("/functions_%s.yaml", c))
-            .collect(java.util.stream.Collectors.toList());
+  public static final List<String> DEFAULT_EXTENSIONS =
+      Collections.unmodifiableList(
+          Arrays.asList(
+                  "boolean",
+                  "aggregate_generic",
+                  "aggregate_approx",
+                  "arithmetic_decimal",
+                  "arithmetic",
+                  "comparison",
+                  "datetime",
+                  "string")
+              .stream()
+              .map(c -> String.format("/functions_%s.yaml", c))
+              .collect(java.util.stream.Collectors.toList()));
 
-    return load(defaultFiles);
+  public static ExtensionCollection loadDefaults() throws IOException {
+    return load(DEFAULT_EXTENSIONS);
   }
 
   public static ExtensionCollection load(List<String> resourcePaths) throws IOException {
