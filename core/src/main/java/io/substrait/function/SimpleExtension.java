@@ -657,11 +657,11 @@ public class SimpleExtension {
   public static final List<String> DEFAULT_EXTENSIONS =
       Collections.unmodifiableList(
           Arrays.asList(
-                  "boolean",
-                  "aggregate_generic",
                   "aggregate_approx",
-                  "arithmetic_decimal",
+                  "aggregate_generic",
                   "arithmetic",
+                  "arithmetic_decimal",
+                  "boolean",
                   "comparison",
                   "datetime",
                   "string")
