@@ -32,17 +32,16 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 /** Converts from proto to pojo rel representation TODO: AdvancedExtension */
-public class ProtoRelConverter {
-  static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ProtoRelConverter.class);
-
+public abstract class ProtoRelConverterBase {
   private final FunctionLookup lookup;
   private final SimpleExtension.ExtensionCollection extensions;
 
-  public ProtoRelConverter(FunctionLookup lookup) throws IOException {
+  public ProtoRelConverterBase(FunctionLookup lookup) throws IOException {
     this(lookup, SimpleExtension.loadDefaults());
   }
 
-  public ProtoRelConverter(FunctionLookup lookup, SimpleExtension.ExtensionCollection extensions) {
+  public ProtoRelConverterBase(
+      FunctionLookup lookup, SimpleExtension.ExtensionCollection extensions) {
     this.lookup = lookup;
     this.extensions = extensions;
   }
