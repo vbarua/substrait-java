@@ -33,9 +33,11 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 /** Converts from proto to pojo rel representation TODO: AdvancedExtension */
-public abstract class ProtoRelConverterBase<AE extends AdvancedExtension> {
+public abstract class ProtoRelConverterBase<AE extends AdvancedExtension, ExtensibleScanDetail> {
 
   protected abstract AE advancedExtension(io.substrait.proto.AdvancedExtension ae);
+
+  protected abstract ExtensibleScanDetail extensibleScanDetail(ReadRel.ExtensionTable et);
 
   private final FunctionLookup lookup;
   private final SimpleExtension.ExtensionCollection extensions;
@@ -94,6 +96,8 @@ public abstract class ProtoRelConverterBase<AE extends AdvancedExtension> {
       return newNamedScan(rel);
     } else if (rel.hasLocalFiles()) {
       return newLocalFiles(rel);
+    } else if (rel.hasExtensionTable()) {
+      return newExtensionTable(rel);
     } else {
       return newEmptyScan(rel);
     }
@@ -153,6 +157,21 @@ public abstract class ProtoRelConverterBase<AE extends AdvancedExtension> {
                         .from(rel.getFilter())
                     : null))
         .extension(optionalAdvancedExtension(rel.getAdvancedExtension()))
+        .build();
+  }
+
+  private ExtensibleScan<ExtensibleScanDetail> newExtensionTable(ReadRel rel) {
+    var namedStruct = newNamedStruct(rel);
+    return ImmutableExtensibleScan.<ExtensibleScanDetail>builder()
+        .initialSchema(namedStruct)
+        .remap(optionalRelmap(rel.getCommon()))
+        .filter(
+            Optional.ofNullable(
+                rel.hasFilter()
+                    ? new ProtoExpressionConverter(lookup, extensions, namedStruct.struct())
+                        .from(rel.getFilter())
+                    : null))
+        .detail(extensibleScanDetail(rel.getExtensionTable()))
         .build();
   }
 

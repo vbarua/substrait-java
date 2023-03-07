@@ -3,10 +3,11 @@ package io.substrait.relation;
 import io.substrait.expression.FunctionLookup;
 import io.substrait.function.SimpleExtension;
 import io.substrait.io.substrait.extension.AdvancedExtension;
+import io.substrait.proto.ReadRel;
 import java.io.IOException;
 
 public class ProtoRelConverter
-    extends ProtoRelConverterBase<ProtoRelConverter.EmptyAdvancedExtension> {
+    extends ProtoRelConverterBase<ProtoRelConverter.EmptyAdvancedExtension, Void> {
   static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ProtoRelConverter.class);
 
   public ProtoRelConverter(FunctionLookup lookup) throws IOException {
@@ -27,5 +28,10 @@ public class ProtoRelConverter
     public io.substrait.proto.AdvancedExtension toProto() {
       return io.substrait.proto.AdvancedExtension.newBuilder().build();
     }
+  }
+
+  @Override
+  protected Void extensibleScanDetail(ReadRel.ExtensionTable et) {
+    return null;
   }
 }
