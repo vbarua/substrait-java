@@ -9,6 +9,7 @@ import io.substrait.expression.FunctionLookup;
 import io.substrait.expression.ImmutableExpression;
 import io.substrait.expression.proto.ProtoExpressionConverter;
 import io.substrait.function.SimpleExtension;
+import io.substrait.io.substrait.extension.AdvancedExtension;
 import io.substrait.proto.AggregateRel;
 import io.substrait.proto.CrossRel;
 import io.substrait.proto.FetchRel;
@@ -32,7 +33,10 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 /** Converts from proto to pojo rel representation TODO: AdvancedExtension */
-public abstract class ProtoRelConverterBase {
+public abstract class ProtoRelConverterBase<AE extends AdvancedExtension> {
+
+  protected abstract AE advancedExtension(io.substrait.proto.AdvancedExtension ae);
+
   private final FunctionLookup lookup;
   private final SimpleExtension.ExtensionCollection extensions;
 
@@ -148,6 +152,7 @@ public abstract class ProtoRelConverterBase {
                     ? new ProtoExpressionConverter(lookup, extensions, namedStruct.struct())
                         .from(rel.getFilter())
                     : null))
+        .extension(optionalAdvancedExtension(rel.getAdvancedExtension()))
         .build();
   }
 
@@ -361,5 +366,9 @@ public abstract class ProtoRelConverterBase {
   private static Optional<Rel.Remap> optionalRelmap(io.substrait.proto.RelCommon relCommon) {
     return Optional.ofNullable(
         relCommon.hasEmit() ? Rel.Remap.of(relCommon.getEmit().getOutputMappingList()) : null);
+  }
+
+  private Optional<AE> optionalAdvancedExtension(io.substrait.proto.AdvancedExtension protoAe) {
+    return Optional.ofNullable(protoAe).map(ae -> advancedExtension(ae));
   }
 }
