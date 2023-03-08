@@ -2,13 +2,11 @@ package io.substrait.relation;
 
 import io.substrait.expression.FunctionLookup;
 import io.substrait.function.SimpleExtension;
-import io.substrait.io.substrait.extension.AdvancedExtension;
 import io.substrait.proto.ExtensionSingleRel;
 import io.substrait.proto.ReadRel;
 import java.io.IOException;
 
-public class ProtoRelConverter
-    extends ProtoRelConverterBase<ProtoRelConverter.EmptyAdvancedExtension, Void> {
+public class ProtoRelConverter extends ProtoRelConverterBase<Void, Void, Void> {
   static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ProtoRelConverter.class);
 
   public ProtoRelConverter(FunctionLookup lookup) throws IOException {
@@ -20,15 +18,16 @@ public class ProtoRelConverter
   }
 
   @Override
-  protected EmptyAdvancedExtension advancedExtension(io.substrait.proto.AdvancedExtension ae) {
-    return new EmptyAdvancedExtension();
+  protected Void optimization(io.substrait.proto.AdvancedExtension ae) {
+    // Optimization are safe to ignore
+    return null;
   }
 
-  public static class EmptyAdvancedExtension implements AdvancedExtension {
-    @Override
-    public io.substrait.proto.AdvancedExtension toProto() {
-      return io.substrait.proto.AdvancedExtension.newBuilder().build();
-    }
+  @Override
+  protected Void enhancement(io.substrait.proto.AdvancedExtension ae) {
+    // Enhancements CANNOT be ignored by consumers.
+    // TODO: Custom exception type
+    throw new RuntimeException("Advanced Extension contains enhancement which must be handled");
   }
 
   @Override

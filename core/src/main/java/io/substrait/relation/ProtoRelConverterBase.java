@@ -10,6 +10,7 @@ import io.substrait.expression.ImmutableExpression;
 import io.substrait.expression.proto.ProtoExpressionConverter;
 import io.substrait.function.SimpleExtension;
 import io.substrait.io.substrait.extension.AdvancedExtension;
+import io.substrait.io.substrait.extension.ImmutableAdvancedExtension;
 import io.substrait.proto.AggregateRel;
 import io.substrait.proto.CrossRel;
 import io.substrait.proto.ExtensionSingleRel;
@@ -34,9 +35,11 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 /** Converts from proto to pojo rel representation TODO: AdvancedExtension */
-public abstract class ProtoRelConverterBase<AE extends AdvancedExtension, ExtensibleScanDetail> {
+public abstract class ProtoRelConverterBase<OPTIMIZATION, ENHANCEMENT, ExtensibleScanDetail> {
 
-  protected abstract AE advancedExtension(io.substrait.proto.AdvancedExtension ae);
+  protected abstract OPTIMIZATION optimization(io.substrait.proto.AdvancedExtension ae);
+
+  protected abstract ENHANCEMENT enhancement(io.substrait.proto.AdvancedExtension ae);
 
   protected abstract ExtensibleScanDetail extensibleScanDetail(ReadRel.ExtensionTable et);
 
@@ -394,7 +397,19 @@ public abstract class ProtoRelConverterBase<AE extends AdvancedExtension, Extens
         relCommon.hasEmit() ? Rel.Remap.of(relCommon.getEmit().getOutputMappingList()) : null);
   }
 
-  private Optional<AE> optionalAdvancedExtension(io.substrait.proto.AdvancedExtension protoAe) {
-    return Optional.ofNullable(protoAe).map(ae -> advancedExtension(ae));
+  private Optional<AdvancedExtension<OPTIMIZATION, ENHANCEMENT>> optionalAdvancedExtension(
+      io.substrait.proto.AdvancedExtension protoAE) {
+    return Optional.ofNullable(protoAE)
+        .map(
+            ae -> {
+                var builder = ImmutableAdvancedExtension.<OPTIMIZATION, ENHANCEMENT>builder();
+                if (ae.hasOptimization()) {
+                    builder.optimization(optimization(ae));
+                }
+                if (ae.hasEnhancement()) {
+                    builder.enhancment(enhancement(ae));
+                }
+                return builder.build();
+            });
   }
 }
