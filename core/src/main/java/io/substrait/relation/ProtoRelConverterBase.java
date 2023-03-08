@@ -12,6 +12,7 @@ import io.substrait.function.SimpleExtension;
 import io.substrait.io.substrait.extension.AdvancedExtension;
 import io.substrait.proto.AggregateRel;
 import io.substrait.proto.CrossRel;
+import io.substrait.proto.ExtensionSingleRel;
 import io.substrait.proto.FetchRel;
 import io.substrait.proto.FilterRel;
 import io.substrait.proto.JoinRel;
@@ -38,6 +39,9 @@ public abstract class ProtoRelConverterBase<AE extends AdvancedExtension, Extens
   protected abstract AE advancedExtension(io.substrait.proto.AdvancedExtension ae);
 
   protected abstract ExtensibleScanDetail extensibleScanDetail(ReadRel.ExtensionTable et);
+
+  /** Override this to provide custom handling for ExtensionSingleRels */
+  protected abstract ExtensionSingle newExtensionSingle(ExtensionSingleRel esr);
 
   private final FunctionLookup lookup;
   private final SimpleExtension.ExtensionCollection extensions;
@@ -81,6 +85,9 @@ public abstract class ProtoRelConverterBase<AE extends AdvancedExtension, Extens
       }
       case CROSS -> {
         return newCross(rel.getCross());
+      }
+      case EXTENSION_SINGLE -> {
+        return newExtensionSingle(rel.getExtensionSingle());
       }
       default -> {
         // TODO: add support for EXTENSION_SINGLE, EXTENSION_MULTI, EXTENSION_LEAF

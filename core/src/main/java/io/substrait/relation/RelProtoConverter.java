@@ -252,6 +252,13 @@ public class RelProtoConverter implements RelVisitor<Rel, RuntimeException> {
         .build();
   }
 
+  @Override
+  public Rel visit(ExtensionSingle extensionSingle) throws RuntimeException {
+    // TODO: Use a custom exception type
+    throw new RuntimeException(
+        "Cannot serialize ExtensionSingle. Extend and override RelProtoConverter w/ custom logic");
+  }
+
   private RelCommon common(io.substrait.relation.Rel rel) {
     var builder = RelCommon.newBuilder();
     var remap = rel.getRemap().orElse(null);

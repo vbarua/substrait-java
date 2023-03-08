@@ -59,7 +59,13 @@ public abstract class AbstractRelVisitor<OUTPUT, EXCEPTION extends Exception>
     return visitFallback(virtualTableScan);
   }
 
+  @Override
   public OUTPUT visit(Cross cross) throws EXCEPTION {
     return visitFallback(cross);
+  }
+
+  @Override
+  public OUTPUT visit(ExtensionSingle extensionSingle) throws EXCEPTION {
+    return visitFallback(extensionSingle);
   }
 }

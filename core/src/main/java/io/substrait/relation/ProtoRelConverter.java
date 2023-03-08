@@ -3,6 +3,7 @@ package io.substrait.relation;
 import io.substrait.expression.FunctionLookup;
 import io.substrait.function.SimpleExtension;
 import io.substrait.io.substrait.extension.AdvancedExtension;
+import io.substrait.proto.ExtensionSingleRel;
 import io.substrait.proto.ReadRel;
 import java.io.IOException;
 
@@ -33,5 +34,12 @@ public class ProtoRelConverter
   @Override
   protected Void extensibleScanDetail(ReadRel.ExtensionTable et) {
     return null;
+  }
+
+  @Override
+  protected ExtensionSingle newExtensionSingle(ExtensionSingleRel esr) {
+    // TODO: Use a custom exception type
+    throw new RuntimeException(
+        "Cannot convert ExtensionSingleRel. Extend and override ProtoRelConverter w/ custom logic");
   }
 }
