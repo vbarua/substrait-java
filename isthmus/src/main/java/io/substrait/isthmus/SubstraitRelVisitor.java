@@ -51,7 +51,7 @@ public class SubstraitRelVisitor extends RelNodeVisitor<Rel, RuntimeException> {
   private static final FeatureBoard FEATURES_DEFAULT = ImmutableFeatureBoard.builder().build();
   private static final Expression.BoolLiteral TRUE = ExpressionCreator.bool(false, true);
 
-  private final RexExpressionConverter converter;
+  private final RexExpressionConverter rexExpressionConverter;
   private final AggregateFunctionConverter aggregateFunctionConverter;
   private final FeatureBoard featureBoard;
   private Map<RexFieldAccess, Integer> fieldAccessDepthMap;
@@ -74,12 +74,13 @@ public class SubstraitRelVisitor extends RelNodeVisitor<Rel, RuntimeException> {
     var windowFunctionConverter =
         new WindowFunctionConverter(
             extensions.windowFunctions(), typeFactory, aggregateFunctionConverter);
-    this.converter = new RexExpressionConverter(this, converters, windowFunctionConverter);
+    this.rexExpressionConverter =
+        new RexExpressionConverter(this, converters, windowFunctionConverter);
     this.featureBoard = features;
   }
 
   private Expression toExpression(RexNode node) {
-    return node.accept(converter);
+    return node.accept(rexExpressionConverter);
   }
 
   @Override
@@ -131,14 +132,14 @@ public class SubstraitRelVisitor extends RelNodeVisitor<Rel, RuntimeException> {
   @Override
   public Rel visit(org.apache.calcite.rel.core.Project project) {
     var input = apply(project.getInput());
-    this.converter.setInputRel(project.getInput());
-    this.converter.setInputType(input.getRecordType());
+    this.rexExpressionConverter.setInputRel(project.getInput());
+    this.rexExpressionConverter.setInputType(input.getRecordType());
     var expressions =
         project.getProjects().stream()
             .map(this::toExpression)
             .collect(java.util.stream.Collectors.toList());
-    this.converter.setInputRel(null);
-    this.converter.setInputType(null);
+    this.rexExpressionConverter.setInputRel(null);
+    this.rexExpressionConverter.setInputType(null);
 
     // todo: eliminate excessive projects. This should be done by converting rexinputrefs to remaps.
     return Project.builder()
@@ -246,7 +247,8 @@ public class SubstraitRelVisitor extends RelNodeVisitor<Rel, RuntimeException> {
 
   Aggregate.Measure fromAggCall(RelNode input, Type.Struct inputType, AggregateCall call) {
     var invocation =
-        aggregateFunctionConverter.convert(input, inputType, call, t -> t.accept(converter));
+        aggregateFunctionConverter.convert(
+            input, inputType, call, t -> t.accept(rexExpressionConverter));
     if (invocation.isEmpty()) {
       throw new UnsupportedOperationException("Unable to find binding for call " + call);
     }
