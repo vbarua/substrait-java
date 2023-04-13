@@ -51,7 +51,6 @@ public class SubstraitRelVisitor extends RelNodeVisitor<Rel, RuntimeException> {
   private static final FeatureBoard FEATURES_DEFAULT = ImmutableFeatureBoard.builder().build();
   private static final Expression.BoolLiteral TRUE = ExpressionCreator.bool(false, true);
 
-  private final SimpleExtension.ExtensionCollection extensions;
   private final RexExpressionConverter converter;
   private final AggregateFunctionConverter aggregateFunctionConverter;
   private final FeatureBoard featureBoard;
@@ -66,7 +65,6 @@ public class SubstraitRelVisitor extends RelNodeVisitor<Rel, RuntimeException> {
       RelDataTypeFactory typeFactory,
       SimpleExtension.ExtensionCollection extensions,
       FeatureBoard features) {
-    this.extensions = extensions;
     var converters = new ArrayList<CallConverter>();
     converters.addAll(CallConverters.DEFAULTS);
     converters.add(new ScalarFunctionConverter(extensions.scalarFunctions(), typeFactory));
